@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<h1 class="title">
+    Hardware page
+</h1>
+
+
+<input type="text" id="hardwareInput" class="hardwareInputStyle" onkeyup="myFunction()" placeholder="Search...">
+<label for="myCheck">Stop refreshing</label> 
+<input type="checkbox" id="myCheck" onclick="refreshCheckbox()">
+
+
+<h2>System Information</h2>
+<ol class="systemInformationStyle filter" id="systemInformation">
+</ol>
+<h2>CPU Information</h2>
+<ol class="cpuInformationStyle filter" id="cpuInformation">
+</ol>
+<h2>Memory Information</h2>
+<ol class="memoryInformationStyle filter" id="memoryInformation">
+</ol>
+<h2>Memory Swap Information</h2>
+<ol class="swapInformationStyle filter" id="swapInformation">
+</ol>
+<h2>Disk Information</h2>
+<ol class="diskInformationStyle filter" id="diskInformation">
+</ol>
+
+
+
+
+
+
+
+<script type="text/javascript" charset="utf-8">
+    var socket = io();
+    let processList;
+    let doRefresh = true;
+  
+    function getSystemInformation(){
+      if(doRefresh === true){
+        socket.emit('getSystemInformation', 'Request from client [getSystemInformation]');
+        setTimeout(getSystemInformation, 60000);
+      }
+    }
+
+    function getCpuInformation(){
+      if(doRefresh === true){
+        socket.emit('getCpuInformation', 'Request from client [getCpuInformation]');
+        setTimeout(getCpuInformation, 1000);
+      }
+    }
+
+    function getMemoryInformation(){
+      if(doRefresh === true){
+        socket.emit('getMemoryInformation', 'Request from client [getMemoryInformation]');
+        setTimeout(getMemoryInformation, 1000);
+      }
+    }
+
+    function getSwapInformation(){
+      if(doRefresh === true){
+        socket.emit('getSwapInformation', 'Request from client [getSwapInformation]');
+        setTimeout(getSwapInformation, 1000);
+      }
+    }
+
+    function getDiskInformation(){
+      if(doRefresh === true){
+        socket.emit('getDiskInformation', 'Request from client [getDiskInformation]');
+        setTimeout(getDiskInformation, 1000);
+      }
+    }
+  
+  
+    function appendSystemInformation(data) {
+      const listItems = document.querySelectorAll('#systemInformation li');
+      listItems.forEach(listItem => {
+        listItem.parentNode.removeChild(listItem);
+      });
+      processList = data;
+      let el = document.getElementById('systemInformation');
+      
+        for (const [key, value] of Object.entries(processList.data)) {
+            el.innerHTML += `<li>${value}</li>`;
+        }
+    }
+
+    function appendCpuInformation(data) {
+      const listItems = document.querySelectorAll('#cpuInformation li');
+      listItems.forEach(listItem => {
+        listItem.parentNode.removeChild(listItem);
+      });
+      processList = data;
+      let el = document.getElementById('cpuInformation');
+      
+        for (const [key, value] of Object.entries(processList.data)) {
+            el.innerHTML += `<li>${value}</li>`;
+        }
+    }
+
+
+    function appendMemoryInformation(data) {
+      const listItems = document.querySelectorAll('#memoryInformation li');
+      listItems.forEach(listItem => {
+        listItem.parentNode.removeChild(listItem);
+      });
+      processList = data;
+      let el = document.getElementById('memoryInformation');
+      
+        for (const [key, value] of Object.entries(processList.data)) {
+            el.innerHTML += `<li>${value}</li>`;
+        }
+    }
+
+    function appendSwapInformation(data) {
+      const listItems = document.querySelectorAll('#swapInformation li');
+      listItems.forEach(listItem => {
+        listItem.parentNode.removeChild(listItem);
+      });
+      processList = data;
+      let el = document.getElementById('swapInformation');
+        for (const [key, value] of Object.entries(processList.data)) {
+            el.innerHTML += `<li>${value}</li>`;
+        }
+    }
+
+    function appendDiskInformation(data) {
+      const listItems = document.querySelectorAll('#diskInformation li');
+      listItems.forEach(listItem => {
+        listItem.parentNode.removeChild(listItem);
+      });
+      processList = data;
+      let el = document.getElementById('diskInformation');
+        for (const [key, value] of Object.entries(processList.data)) {
+            el.innerHTML += `<li>${value}</li>`;
+        }
+    }
+  
+    /*Getting process list from server*/
+    socket.on('getSystemInformation', data => {
+      console.log('[Client socket]:', data);
+      appendSystemInformation(data);
+    })
+
+
+    socket.on('getCpuInformation', data => {
+      console.log('[Client socket]:', data);
+      appendCpuInformation(data);
+    })
+
+    socket.on('getMemoryInformation', data => {
+      console.log('[Client socket]:', data);
+      appendMemoryInformation(data);
+    })
+
+    socket.on('getSwapInformation', data => {
+      console.log('[Client socket]:', data);
+      appendSwapInformation(data);
+    })
+
+    socket.on('getDiskInformation', data => {
+      console.log('[Client socket]:', data);
+      appendDiskInformation(data);
+    })
+
+    getSystemInformation();
+    getCpuInformation();
+    getMemoryInformation();
+    getSwapInformation();
+    getDiskInformation();
+  
+    function refreshCheckbox(){
+      var checkBox = document.getElementById("myCheck");
+      if (checkBox.checked == true){
+        doRefresh = false;
+        console.log(doRefresh);
+      } else {
+        doRefresh=true;
+        getSystemInformation();
+        getCpuInformation();
+      }
+    }
+  
+    function myFunction() {
+    // Declare variables
+    var input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById('hardwareInput');
+    filter = input.value.toUpperCase();
+    ul = document.getElementsByClassName("filter");
+    li = ul[0].getElementsByTagName('li');
+    li2 = ul[1].getElementsByTagName('li');
+    li3 = ul[2].getElementsByTagName('li');
+    li4 = ul[3].getElementsByTagName('li');
+    li5 = ul[4].getElementsByTagName('li');
+    // Loop through all list items, and hide those who don't match the search query
+    for (i = 0; i < li.length; i++) {
+      a = li[i];
+      txtValue = a.textContent || a.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        li[i].style.display = "";
+      } else {
+        li[i].style.display = "none";
+      }
+    }
+
+
+    for (i = 0; i < li2.length; i++) {
+      a = li2[i];
+      txtValue = a.textContent || a.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        li2[i].style.display = "";
+      } else {
+        li2[i].style.display = "none";
+      }
+    }
+
+    for (i = 0; i < li3.length; i++) {
+      a = li3[i];
+      txtValue = a.textContent || a.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        li3[i].style.display = "";
+      } else {
+        li3[i].style.display = "none";
+      }
+    }
+
+    for (i = 0; i < li4.length; i++) {
+      a = li4[i];
+      txtValue = a.textContent || a.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        li4[i].style.display = "";
+      } else {
+        li4[i].style.display = "none";
+      }
+    }
+
+    for (i = 0; i < li5.length; i++) {
+      a = li5[i];
+      txtValue = a.textContent || a.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        li5[i].style.display = "";
+      } else {
+        li5[i].style.display = "none";
+      }
+    }
+
+
+  }
+    
+  </script>
+{% endblock %}

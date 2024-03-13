@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">
+  Processes page
+</h1>
+
+<input type="text" id="processInput" class="processInputStyle" onkeyup="myFunction()" placeholder="Search for process">
+<label for="myCheck">Stop refreshing</label> 
+<input type="checkbox" id="myCheck" onclick="refreshCheckbox()">
+<ol id="processList">
+
+</ol>
+
+
+<script type="text/javascript" charset="utf-8">
+  var socket = io();
+  let processList;
+  let doRefresh = true;
+
+  function getProcessList(){
+    if(doRefresh === true){
+      socket.emit('getProcesses', 'Request from client [getProcessList]');
+      setTimeout(getProcessList, 3000);
+    }
+  }
+
+  socket.on('connect', function() {
+      socket.emit('my event', {data: 'I\'m connected!'});
+  });
+
+  function appendProcessList(data) {
+    const listItems = document.querySelectorAll('#processList li');
+    listItems.forEach(listItem => {
+      listItem.parentNode.removeChild(listItem);
+    });
+    processList = data;
+    let el = document.getElementById('processList');
+    el.innerHTML = processList.data.map(process=>`<li>Process ID:${process.pid} | Process Name: ${process.name} | Username: ${process.username} | Uptime: ${process.uptime}</li>`).join(" ");
+  }
+
+  /*Getting process list from server*/
+  socket.on('processList', data => {
+    console.log('[Client socket]:', data);
+    appendProcessList(data);
+  })
+  getProcessList();
+
+
+  function refreshCheckbox(){
+    var checkBox = document.getElementById("myCheck");
+    if (checkBox.checked == true){
+      doRefresh = false;
+      console.log(doRefresh);
+    } else {
+      doRefresh=true;
+      getProcessList();
+    }
+  }
+
+  function myFunction() {
+  // Declare variables
+  var input, filter, ul, li, a, i, txtValue;
+  input = document.getElementById('processInput');
+  filter = input.value.toUpperCase();
+  ul = document.getElementById("processList");
+  li = ul.getElementsByTagName('li');
+
+  // Loop through all list items, and hide those who don't match the search query
+  for (i = 0; i < li.length; i++) {
+    a = li[i];
+    txtValue = a.textContent || a.innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      li[i].style.display = "";
+    } else {
+      li[i].style.display = "none";
+    }
+  }
+}
+  
+</script>
+{% endblock %}
+
+  <!-- {% for proc in process_list %}
+    <li>Process ID: {{ proc.pid }} | Process Name: {{proc.name}} | Username: {{proc.username}} | Uptime: {{proc.uptime}}</li>
+  {% endfor %}   -->

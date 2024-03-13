@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">
+  Website Tracker
+</h1>
+
+<input type="text" id="hardwareInput" class="hardwareInputStyle" onkeyup="myFunction()" placeholder="Search...">
+<label for="myCheck">Stop refreshing</label> 
+<input type="checkbox" id="myCheck" onclick="refreshCheckbox()">
+
+
+<h2>Viewed Websites Information</h2>
+<ol class="systemInformationStyle filter" id="systemInformation">
+</ol>
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" charset="utf-8">
+  var socket = io();
+  let processList;
+  let doRefresh = true;
+
+  function getViewedWebsiteInformation(){
+    if(doRefresh === true){
+      socket.emit('getViewedWebsiteInformation', 'Request from client [getViewedWebsiteInformation]');
+      setTimeout(getViewedWebsiteInformation, 100);
+    }
+  }
+
+
+
+
+  function appendSystemInformation(data) {
+    const listItems = document.querySelectorAll('#systemInformation li');
+    listItems.forEach(listItem => {
+      listItem.parentNode.removeChild(listItem);
+    });
+    processList = data;
+    let el = document.getElementById('systemInformation');
+    
+      for (const [key, value] of Object.entries(processList.data)) {
+          el.innerHTML += `<li>${key}:${value} seconds</li>`;
+      }
+  }
+
+  /*Getting process list from server*/
+  socket.on('getViewedWebsiteInformation', data => {
+    console.log('[Client socket]:', data);
+    appendSystemInformation(data);
+  })
+
+
+
+  getViewedWebsiteInformation();
+
+
+  function refreshCheckbox(){
+    var checkBox = document.getElementById("myCheck");
+    if (checkBox.checked == true){
+      doRefresh = false;
+      console.log(doRefresh);
+    } else {
+      doRefresh=true;
+      getViewedWebsiteInformation();
+    }
+  }
+
+  function myFunction() {
+  // Declare variables
+  var input, filter, ul, li, a, i, txtValue;
+  input = document.getElementById('hardwareInput');
+  filter = input.value.toUpperCase();
+  ul = document.getElementsByClassName("filter");
+  li = ul[0].getElementsByTagName('li');
+  // Loop through all list items, and hide those who don't match the search query
+  for (i = 0; i < li.length; i++) {
+    a = li[i];
+    txtValue = a.textContent || a.innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      li[i].style.display = "";
+    } else {
+      li[i].style.display = "none";
+    }
+  }
+
+}
+  
+</script>
+
+
+
+
+
+
+
+
+{% endblock %}
